@@ -13,8 +13,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-module Version
-  module Ruby
-    VERSION = "0.1.0"
+require 'spec_helper'
+
+RSpec.describe 'SkywalkingRuby' do
+  describe 'Config' do
+    context 'Test Load from file' do
+      it 'should load config from file' do
+        config = SkywalkingRuby::Configuration.new(
+          File.expand_path(
+            File.join(File.dirname(__FILE__), "../")
+          )
+        )
+        p config.file_config
+        expect(config.file_config["agent_service_name"]).to eq('Your_ApplicationName')
+      end
+    end
   end
 end

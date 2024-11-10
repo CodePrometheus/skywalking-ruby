@@ -13,12 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-source "https://rubygems.org"
-
-# Specify your gem's dependencies in skywalking-ruby.gemspec
-gemspec
-
-ruby ">= 3.0.0"
-
-# Tools
-gem 'rspec', '~> 3'
+module SkywalkingRuby
+  class Redis
+  end
+end

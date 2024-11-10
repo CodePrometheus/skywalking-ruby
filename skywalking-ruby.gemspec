@@ -13,12 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-$LOAD_PATH.push(File.expand_path("lib", __dir__))
-require_relative "skywalking/version"
+require File.expand_path("lib/skywalking_ruby/version", __dir__)
 
 Gem::Specification.new do |spec|
   spec.name = "skywalking-ruby"
-  spec.version = Version::Ruby::VERSION
+  spec.version = SkywalkingRuby::VERSION
   spec.authors = ["Zixin Zhou"]
   spec.email = ["zhouzixin@apache.org"]
 

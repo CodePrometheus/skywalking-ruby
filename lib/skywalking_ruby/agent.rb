@@ -13,12 +13,36 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-source "https://rubygems.org"
+module SkywalkingRuby
+  # @api private
+  class Agent
+    LOCK = Mutex.new
 
-# Specify your gem's dependencies in skywalking-ruby.gemspec
-gemspec
+    def self.instance
+      defined?(@instance) && @instance
+    end
 
-ruby ">= 3.0.0"
+    def self.start(config)
+      return @instance if @instance
+      LOCK.synchronize do
+        return @instance if @instance
 
-# Tools
-gem 'rspec', '~> 3'
+      end
+    end
+    
+    def self.stop
+      LOCK.synchronize do
+        return unless @instance
+        @instance.stop
+        @instance = nil
+      end
+    end
+
+    def initialize
+    end
+    
+    def stop
+      
+    end
+  end
+end
