@@ -13,42 +13,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+# frozen_string_literal: true
+
+require 'rspec'
+
 module SkywalkingRuby
-  # @api private
-  class Agent
-    LOCK = Mutex.new
-
-    def self.instance
-      defined?(@instance) && @instance
-    end
-
-    def self.start(opts)
-      return @instance if @instance
-      config = Configuration.new(opts) unless opts.is_a?(Configuration)
-      
-      LOCK.synchronize do
-        return @instance if @instance
-        @instance = new(config).start
-        config.freeze
-      end
-    end
+  RSpec.describe Logger do
     
-    def self.stop
-      LOCK.synchronize do
-        return unless @instance
-        @instance.stop
-        @instance = nil
-      end
-    end
-
-    def initialize(config)
-      @config = config
-    end
-    
-    def start
-    end
-    
-    def stop
-    end
   end
 end

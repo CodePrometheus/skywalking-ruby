@@ -15,18 +15,28 @@
 
 require 'spec_helper'
 
-RSpec.describe 'SkywalkingRuby' do
-  describe 'Config' do
-    context 'Test Load from file' do
-      it 'should load config from file' do
-        config = SkywalkingRuby::Configuration.new(
-          File.expand_path(
-            File.join(File.dirname(__FILE__), "../")
-          )
-        )
-        p config.file_config
-        expect(config.file_config["agent_service_name"]).to eq('Your_ApplicationName')
-      end
+module SkywalkingRuby
+  RSpec.describe Configuration do
+    it 'load DEFAULTS' do
+      config = Configuration.new
+      expect(config.agent_config['service_name']).to eq 'Your_ApplicationName'
+    end
+    
+    it 'loads args' do
+      config = Configuration.new(service_name: 'sw-ruby')
+      expect(config.agent_config['service_name']).to eq 'sw-ruby'
+    end
+    
+    it 'loads from yaml' do
+      config = Configuration.new(config_file: 'spec/fixtures/agent.yaml')
+      expect(config.agent_config['service_name']).to eq 'Your_ApplicationName'
+    end
+    
+    it 'loads from env' do
+      ENV['SW_AGENT_SERVICE_NAME'] = 'sw-ruby-env'
+      config = Configuration.new(config_file: 'spec/fixtures/agent.yaml')
+      expect(config.agent_config['service_name']).to eq 'sw-ruby-env'
+      p config.agent_config
     end
   end
 end

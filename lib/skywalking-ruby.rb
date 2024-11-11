@@ -20,17 +20,15 @@ module SkywalkingRuby
   class << self
     attr_reader :configuration
     
-    def start
+    def start(opts = {})
       if started?
         p 'SkywalkingRuby has already started'
         return
       end
       
       p 'SkywalkingRuby starting...'
-      @configuration ||= Configuration.new(Configuration.determine_file_path)
   
-      Agent.start(config)
-      @configuration.freeze
+      Agent.start(opts)
     end
 
     def started?

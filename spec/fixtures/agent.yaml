@@ -16,12 +16,11 @@
 # under the License.
 
 # The service name in UI
-agent_service_name: Your_ApplicationName
-agent_instance_name: Your_InstanceName  
+service_name: Your_ApplicationName
+instance_name: Your_InstanceName  
 
 # Whether to enable the reporter
-reporter_discard: false
+collector_discard: false
 # The gRPC server address of the backend service.
-reporter_grpc.backend_service: 127.0.0.1:11800
-# The maximum count of segment for reporting tracing data.
-reporter_grpc.max_send_queue: 5000
+collector_backend_service: 127.0.0.1:11800
+config_file: config/skywalking_ruby.yaml
