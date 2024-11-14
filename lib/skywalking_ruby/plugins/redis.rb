@@ -14,6 +14,24 @@
 #  limitations under the License.
 
 module SkywalkingRuby
-  class Redis
+  module Plugins
+    class Redis
+      module RedisIntercept
+        def call_v(command)
+          command_name = command[0]
+        end
+      end
+
+      def install
+        version = defined?(::Redis::VERSION) ? Gem::Version.new(::Redis::VERSION) : nil
+        if !version || version < Gem::Version.new("5.0.0")
+          SkywalkingRuby.info "Plugin Redis Instrumenting"
+          return
+        end
+        if ::Redis::Client.method_defined?(:call_v)
+          ::Redis::Client.prepend RedisIntercept
+        end
+      end
+    end
   end
 end

@@ -25,6 +25,7 @@ module SkywalkingRuby
       'config_file' => [:string, 'config/skywalking_ruby.yaml'],
       'log_file' => [:string, 'skywalking_ruby.log'],
       'log_file_path' => [:string, 'STDOUT'],
+      'log_level' => [:string, 'info'],
     }.freeze
 
     # @api private

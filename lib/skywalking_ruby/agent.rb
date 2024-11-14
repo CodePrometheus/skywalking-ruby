@@ -16,28 +16,30 @@
 module SkywalkingRuby
   # @api private
   class Agent
-    LOCK = Mutex.new
+    class << self
+      LOCK = Mutex.new
 
-    def self.instance
-      defined?(@instance) && @instance
-    end
-
-    def self.start(opts)
-      return @instance if @instance
-      config = Configuration.new(opts) unless opts.is_a?(Configuration)
-      
-      LOCK.synchronize do
-        return @instance if @instance
-        @instance = new(config).start
-        config.freeze
+      def self.instance
+        defined?(@instance) && @instance
       end
-    end
-    
-    def self.stop
-      LOCK.synchronize do
-        return unless @instance
-        @instance.stop
-        @instance = nil
+
+      def self.start(opts)
+        return @instance if @instance
+        config = Configuration.new(opts) unless opts.is_a?(Configuration)
+
+        LOCK.synchronize do
+          return @instance if @instance
+          @instance = new(config).start
+          config.freeze
+        end
+      end
+
+      def self.stop
+        LOCK.synchronize do
+          return unless @instance
+          @instance.stop
+          @instance = nil
+        end
       end
     end
 

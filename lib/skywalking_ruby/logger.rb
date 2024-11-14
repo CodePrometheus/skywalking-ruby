@@ -17,11 +17,17 @@ require 'logger'
 
 module SkywalkingRuby
   class Logger
+    attr_writer :logger
+
     def initialize(args = {})
       @args = args
       @log_writer = log_writer
       @logger = ::Logger.new(@log_writer)
       @logger.level = log_level
+    end
+
+    def logging
+      @logger ||= MUTEX.synchronize { LoggerFactory.create }
     end
 
     def log_writer
@@ -51,35 +57,49 @@ module SkywalkingRuby
       else ::Logger::INFO
       end
     end
-    
+
     def info(msg, *args)
       log(:info, msg, *args)
     end
-    
+
     def debug(msg, *args)
       log(:debug, msg, *args)
     end
-    
+
     def warn(msg, *args)
       log(:warn, msg, *args)
     end
-    
+
     def error(msg, *args)
       log(:error, msg, *args)
     end
-    
+
     def log(level, msg, *args)
-      if @logger.respond_to?(level)
-        if args.empty?
-          @logger.send(level, msg)
+      logger = self.logging
+      if logger
+        if logger.respond_to?(level)
+          if args.empty?
+            logger.send(level, msg)
+          else
+            logger.send(level, format(msg, *args))
+          end
         else
-          @logger.send(level, format(msg, *args))
+          Kernel.warn("Unknown log level: #{level}")
         end
-      else
-        Kernel.warn("Unknown log level: #{level}")
       end
     rescue Exception => e
       p "log exception: #{e.message}"
+    end
+  end
+
+  class LoggerFactory
+    def self.create
+      Logger.new(
+        {
+          :log_level => @agent_config[:log_level],
+          :log_file_path => @agent_config[:log_file_path],
+        }
+      )
     end
   end
 end
