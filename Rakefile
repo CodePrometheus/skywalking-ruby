@@ -18,5 +18,6 @@ OUT_DIR = File.join(ROOT_DIR, 'lib', 'skywalking_ruby/proto/')
 
 task :gen_protos do
   system "gem install grpc grpc-tools"
+  FileUtils.mkdir_p(OUT_DIR) unless Dir.exist?(OUT_DIR)
   system "grpc_tools_ruby_protoc -I protocol --ruby_out=#{OUT_DIR} --grpc_out=#{OUT_DIR} protocol/**/*.proto"
 end

@@ -13,6 +13,25 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-[submodule "protocol"]
-	path = protocol
-	url = https://github.com/apache/skywalking-data-collect-protocol.git
+module SkywalkingRuby
+  class Component
+    Unknown = 0
+    Redis = 7
+  end
+
+  class Layer
+    Unknown = 0
+    Database = 1
+    RPCFramework = 2
+    HTTP = 3
+    MQ = 4
+    Cache = 5
+    FAAS = 6
+  end
+
+  class Kind
+    Local = 0
+    Entry = 1
+    Exit = 2
+  end
+end

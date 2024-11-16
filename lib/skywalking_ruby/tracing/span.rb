@@ -13,13 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-require 'fileutils'
-
-ROOT_DIR = File.expand_path('..', __dir__)
-OUT_DIR = File.join(ROOT_DIR, 'lib', 'skywalking_ruby/proto')
-
-FileUtils.mkdir_p(OUT_DIR)
-
-Dir.chdir(File.join(ROOT_DIR, 'protocol')) do
-  system("grpc_tools_ruby_protoc -I. --ruby_out=#{OUT_DIR} --grpc_out=#{OUT_DIR} **/*.proto")
+module SkywalkingRuby
+  class Span
+  end
 end

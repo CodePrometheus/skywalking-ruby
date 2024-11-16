@@ -13,6 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-[submodule "protocol"]
-	path = protocol
-	url = https://github.com/apache/skywalking-data-collect-protocol.git
+module SkywalkingRuby
+  class Context
+    
+    class SpanContext
+      def new_local_span
+      end
+    end
+    
+    class NoopContext
+    end
+  end
+end
