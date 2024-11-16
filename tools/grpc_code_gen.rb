@@ -13,10 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-ROOT_DIR = File.expand_path('', __dir__)
-OUT_DIR = File.join(ROOT_DIR, 'lib', 'skywalking_ruby/proto/')
+require 'fileutils'
 
-task :gen_protos do
-  system "gem install grpc grpc-tools"
-  system "grpc_tools_ruby_protoc -I protocol --ruby_out=#{OUT_DIR} --grpc_out=#{OUT_DIR} protocol/**/*.proto"
+ROOT_DIR = File.expand_path('..', __dir__)
+OUT_DIR = File.join(ROOT_DIR, 'lib', 'skywalking_ruby/proto')
+
+FileUtils.mkdir_p(OUT_DIR)
+
+Dir.chdir(File.join(ROOT_DIR, 'protocol')) do
+  system("grpc_tools_ruby_protoc -I. --ruby_out=#{OUT_DIR} --grpc_out=#{OUT_DIR} **/*.proto")
 end

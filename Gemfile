@@ -22,3 +22,5 @@ ruby ">= 3.0.0"
 
 # Tools
 gem 'rspec', '~> 3'
+gem "grpc"
+gem "grpc-tools"
