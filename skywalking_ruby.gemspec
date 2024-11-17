@@ -16,7 +16,7 @@
 require File.expand_path("lib/skywalking_ruby/version", __dir__)
 
 Gem::Specification.new do |spec|
-  spec.name = "skywalking-ruby"
+  spec.name = "skywalking_ruby"
   spec.version = SkywalkingRuby::VERSION
   spec.authors = ["Zixin Zhou"]
   spec.email = ["zhouzixin@apache.org"]

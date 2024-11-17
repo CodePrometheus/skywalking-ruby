@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-require "yaml"
+require 'yaml'
 
 module SkywalkingRuby
   class Configuration
@@ -26,6 +26,7 @@ module SkywalkingRuby
       'log_file' => [:string, 'skywalking_ruby.log'],
       'log_file_path' => [:string, 'STDOUT'],
       'log_level' => [:string, 'info'],
+      'disable_plugins' => [:string, ''],
     }.freeze
 
     # @api private
@@ -102,6 +103,10 @@ module SkywalkingRuby
       agent_config.freeze
       agent_config.transform_values(&:freeze)
       self
+    end
+
+    def active?
+      agent_config[]
     end
   end
 end

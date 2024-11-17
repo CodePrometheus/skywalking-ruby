@@ -13,43 +13,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-require 'skywalking_ruby/agent'
-require 'skywalking_ruby/configuration'
-
 module SkywalkingRuby
-  class << self
-    attr_reader :configuration
-    
-    def start(opts = {})
-      if started?
-        p 'SkywalkingRuby has already started'
-        return
+  module Plugins
+    class HTTP < SkywalkingRuby::PluginsManager::SWPlugin
+      def name
+        "http"
       end
-      
-      p 'SkywalkingRuby starting...'
-  
-      Agent.start(opts)
-    end
-
-    def started?
-      defined?(@started) ? @started : false
-    end
-    
-    def configure(root_path = nil)
-      if started?
-        p 'SkywalkingRuby has already started'
-        return
+      def install
       end
-      
-      @configuration = Configuration.new(root_path || Configuration.determine_file_path)
-      custom_config = Configuration::CustomConfig.new(config)
-      return unless block_given?
-      yield custom_config
-      configuration.merge_custom_options(custom_config.custom_options)
-    end
-    
-    def stop
-      Agent.stop
     end
   end
 end

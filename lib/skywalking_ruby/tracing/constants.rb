@@ -14,24 +14,26 @@
 #  limitations under the License.
 
 module SkywalkingRuby
-  class Component
-    Unknown = 0
-    Redis = 7
-  end
+  module Tracing
+    class Component
+      Unknown = 0
+      Redis = 7
+    end
 
-  class Layer
-    Unknown = 0
-    Database = 1
-    RPCFramework = 2
-    HTTP = 3
-    MQ = 4
-    Cache = 5
-    FAAS = 6
-  end
+    class Layer
+      Unknown = 0
+      Database = 1
+      RPCFramework = 2
+      HTTP = 3
+      MQ = 4
+      Cache = 5
+      FAAS = 6
+    end
 
-  class Kind
-    Local = 0
-    Entry = 1
-    Exit = 2
+    class Kind
+      Local = 0
+      Entry = 1
+      Exit = 2
+    end
   end
 end

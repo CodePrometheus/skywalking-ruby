@@ -19,27 +19,33 @@ module SkywalkingRuby
     class << self
       LOCK = Mutex.new
 
-      def self.instance
-        defined?(@instance) && @instance
+      def self.agent
+        defined?(@agent) && @agent
       end
 
-      def self.start(opts)
-        return @instance if @instance
-        config = Configuration.new(opts) unless opts.is_a?(Configuration)
+      def self.start(config)
+        return @agent if @agent
+        config ||= {}
+        config = Configuration.new(config) unless config.is_a?(Configuration)
 
         LOCK.synchronize do
-          return @instance if @instance
-          @instance = new(config).start
+          return @agent if @agent
+          @agent = new(config).start
           config.freeze
         end
+        self
       end
 
       def self.stop
         LOCK.synchronize do
-          return unless @instance
-          @instance.stop
-          @instance = nil
+          return unless @agent
+          @agent.shutdown
+          @agent = nil
         end
+      end
+      
+      def started?
+        !!(defined?(@agent) && @agent)
       end
     end
 
@@ -48,9 +54,10 @@ module SkywalkingRuby
     end
     
     def start
+      PluginsManager.new
     end
     
-    def stop
+    def shutdown
     end
   end
 end

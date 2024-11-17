@@ -14,14 +14,16 @@
 #  limitations under the License.
 
 module SkywalkingRuby
-  class Context
-    
-    class SpanContext
-      def new_local_span
+  module Tracing
+    class Context
+
+      class SpanContext
+        def new_local_span
+        end
       end
-    end
-    
-    class NoopContext
+
+      class NoopContext
+      end
     end
   end
 end

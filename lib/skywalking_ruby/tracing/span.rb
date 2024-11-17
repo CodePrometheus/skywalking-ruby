@@ -14,6 +14,8 @@
 #  limitations under the License.
 
 module SkywalkingRuby
-  class Span
+  module Tracing
+    class Span
+    end
   end
 end

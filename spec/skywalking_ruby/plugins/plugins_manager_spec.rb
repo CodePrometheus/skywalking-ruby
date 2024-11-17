@@ -13,30 +13,3 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-module SkywalkingRuby
-  module Plugins
-    class Redis < SkywalkingRuby::PluginsManager::SWPlugin
-      module RedisIntercept
-        def call_v(command)
-          command_name = command[0]
-        end
-      end
-
-      def name
-        "redis"
-      end
-
-      def version_valid?
-        version = Gem::Version.new(::Redis::VERSION) rescue nil
-        version && version >= Gem::Version.new("5.0.0")
-      end
-
-      def install
-        SkywalkingRuby.info "Plugin Redis Instrumenting"
-        if ::Redis::Client.method_defined?(:call_v)
-          ::Redis::Client.prepend RedisIntercept
-        end
-      end
-    end
-  end
-end
