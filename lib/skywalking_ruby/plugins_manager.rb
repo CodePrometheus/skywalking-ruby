@@ -16,34 +16,44 @@
 module SkywalkingRuby
   module Plugins
     class PluginsManager
-      def initialize
-        install_plugins
+      class << self
+        def register(name, plugin_klass)
+          installed[name] = plugin_klass
+        end
+
+        def installed
+          @installed ||= {}
+        end
       end
-      
+
       attr_reader :enabled_plugins
 
+      def initialize(config)
+        @config = config
+      end
+
       def install_plugins
-        @enabled_plugins = Plugin.plugin_names - @agent_config['disable_plugins'].split(',')
+        load_plugins
+        installed_plugins = self.class.installed.keys
+        @enabled_plugins ||= installed_plugins - @config.disable_plugins.split(',')
+        @enabled_plugins.each do |plugin_name|
+          self.class.installed[plugin_name].try_install(plugin_name)
+        end
+      end
+      
+      def load_plugins
+        Dir[File.join(__dir__, 'plugins', '*.rb')].each { |file| require file }
       end
 
       class SWPlugin
-        include SkywalkingRuby::Log
-        @plugin_names = []
-
-        class << self
-          attr_reader :plugin_names
-
-          def inherited(subclass)
-            @plugin_names << subclass.name
-          end
+        include Log::Logging
+        
+        def self.register(name, plugin_klass = self)
+          Plugins::PluginsManager.register(name, plugin_klass.new)
         end
 
         def initialize
           @installed = false
-        end
-
-        def name
-          raise NotImplementedError
         end
 
         def installed?
@@ -51,6 +61,7 @@ module SkywalkingRuby
         end
 
         def try_install(name)
+          info "Skywalking-Ruby begin to install plugin #{name}"
           return unless version_valid?
           return if installed?
           begin

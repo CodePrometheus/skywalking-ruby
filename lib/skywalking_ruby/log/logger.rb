@@ -13,52 +13,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-require 'logger'
-
 module SkywalkingRuby
   module Log
-    class Logger
-      attr_writer :logger
-
-      def initialize(args = {})
-        @args = args
-        @log_writer = log_writer
-        @logger = ::Logger.new(@log_writer)
-        @logger.level = log_level
-      end
-
-      def logging
-        @logger ||= MUTEX.synchronize { LoggerFactory.create }
-      end
-
-      def log_writer
-        case true
-        when stdout?
-          STDOUT
-        when !@args[:log_file].nil?
-          @args[:log_file]
-        when !@args[:log_file_path].nil?
-          "#{@args[:log_file_path]}/skywalking_ruby.log"
-        else
-          STDOUT
-        end
-      end
-
-      def stdout?
-        @args[:stdout] || @args[:log_file_path] == "STDOUT"
-      end
-
-      def log_level
-        case @args[:log_level]
-        when "debug" then ::Logger::DEBUG
-        when "info" then ::Logger::INFO
-        when "warn" then ::Logger::WARN
-        when "error" then ::Logger::ERROR
-        when "fatal" then ::Logger::FATAL
-        else ::Logger::INFO
-        end
-      end
-
+    module Logging
       def info(msg, *args)
         log(:info, msg, *args)
       end
@@ -76,7 +33,7 @@ module SkywalkingRuby
       end
 
       def log(level, msg, *args)
-        logger = self.logging
+        logger = Configuration.new.logger
         if logger
           if logger.respond_to?(level)
             if args.empty?
@@ -90,17 +47,6 @@ module SkywalkingRuby
         end
       rescue Exception => e
         p "log exception: #{e.message}"
-      end
-    end
-
-    class LoggerFactory
-      def self.create
-        Logger.new(
-          {
-            :log_level => @agent_config[:log_level],
-            :log_file_path => @agent_config[:log_file_path],
-          }
-        )
       end
     end
   end

@@ -14,6 +14,7 @@
 #  limitations under the License.
 
 require 'yaml'
+require 'logger'
 
 module SkywalkingRuby
   class Configuration
@@ -22,11 +23,12 @@ module SkywalkingRuby
       'instance_name' => [:string, 'Your_InstanceName'],
       'collector_discard' => [:bool, false],
       'collector_backend_service' => [:string, '127.0.0.1:11800'],
-      'config_file' => [:string, 'config/skywalking_ruby.yaml'],
+      'config_file' => [:string, ''],
       'log_file' => [:string, 'skywalking_ruby.log'],
       'log_file_path' => [:string, 'STDOUT'],
       'log_level' => [:string, 'info'],
-      'disable_plugins' => [:string, ''],
+      'disable_plugins' => [:string, 'redis'],
+      'report_protocol' => [:string, 'grpc'],
     }.freeze
 
     # @api private
@@ -35,6 +37,7 @@ module SkywalkingRuby
     def initialize(opts = {})
       @agent_config = {}
       initialize_config(opts)
+      generate_accessors
     end
 
     def initialize_config(opts)
@@ -55,8 +58,9 @@ module SkywalkingRuby
 
     def override_config_by_file
       config_yaml = @agent_config['config_file']
+      return if config_yaml.nil? || config_yaml.empty?
       unless File.exist?(config_yaml)
-        p "No config file found at #{config_yaml}"
+        logger.warn "No config file found at #{config_yaml}"
         return
       end
 
@@ -69,6 +73,7 @@ module SkywalkingRuby
         error = "Invalid format in config file" if loaded_yaml && !loaded_yaml.is_a?(Hash)
       rescue Exception => e
         error = e.message
+        logger.error "override config by file failed, error=%s", e.message
         nil
       end
 
@@ -105,8 +110,74 @@ module SkywalkingRuby
       self
     end
 
-    def active?
-      agent_config[]
+    #####
+    # LOAD LOG
+    #####
+    def logger
+      @logger ||= Mutex.new.synchronize { get_logger }
+    end
+
+    def get_logger
+      return @logger if @logger
+      log_dest = log_destination
+      create_log(log_dest, get_log_level)
+    end
+
+    def create_log(log_dest, level)
+      if log_dest.is_a?(String)
+        log_dest = File.expand_path(out, Pathname.new(Dir.pwd).realpath)
+        FileUtils.mkdir_p(File.dirname(log_dest))
+      end
+      logger = Logger.new(log_dest, progname: "Skywalking-Ruby", level: level)
+      logger.formatter = log_formatter
+      logger
+    rescue StandardError
+      Logger.new($stdout, progname: "Skywalking-Ruby", level: level)
+    end
+
+    def log_formatter
+      ->(severity, datetime, program, message) do
+        datetime = datetime.strftime("%Y-%m-%dT%H:%M:%S")
+        "[#{datetime}] - #{severity} - [#{program}] #{message}\n"
+      end
+    end
+
+    def log_destination
+      case true
+      when stdout?
+        $stdout
+      when !agent_config['log_file'].nil?
+        agent_config['log_file']
+      when !agent_config['log_file_path'].nil?
+        "#{agent_config['log_file_path']}/skywalking_ruby.log"
+      else
+        $stdout
+      end
+    end
+
+    def get_log_level
+      case agent_config['log_level']
+      when "debug" then ::Logger::DEBUG
+      when "info" then ::Logger::INFO
+      when "warn" then ::Logger::WARN
+      when "error" then ::Logger::ERROR
+      when "fatal" then ::Logger::FATAL
+      else ::Logger::INFO
+      end
+    end
+
+    def stdout?
+      agent_config['log_file_path'] == "STDOUT"
+    end
+
+    private
+
+    def generate_accessors
+      agent_config.keys.each do |key|
+        self.class.send(:define_method, key) do
+          agent_config[key.to_s]
+        end
+      end
     end
   end
 end

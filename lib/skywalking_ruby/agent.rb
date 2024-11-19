@@ -13,17 +13,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+require 'skywalking_ruby/configuration'
+require 'skywalking_ruby/log/logger'
+require 'skywalking_ruby/plugins_manager'
+
 module SkywalkingRuby
   # @api private
   class Agent
     class << self
       LOCK = Mutex.new
 
-      def self.agent
+      def agent
         defined?(@agent) && @agent
       end
 
-      def self.start(config)
+      def start(config)
         return @agent if @agent
         config ||= {}
         config = Configuration.new(config) unless config.is_a?(Configuration)
@@ -33,30 +37,31 @@ module SkywalkingRuby
           @agent = new(config).start
           config.freeze
         end
-        self
       end
 
-      def self.stop
+      def stop
         LOCK.synchronize do
           return unless @agent
           @agent.shutdown
           @agent = nil
         end
       end
-      
+
       def started?
         !!(defined?(@agent) && @agent)
       end
     end
 
+    attr_reader :plugins, :logger
+
     def initialize(config)
-      @config = config
+      @plugins = Plugins::PluginsManager.new(config)
     end
-    
+
     def start
-      PluginsManager.new
+      plugins.install_plugins
     end
-    
+
     def shutdown
     end
   end

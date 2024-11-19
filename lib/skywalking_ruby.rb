@@ -14,7 +14,6 @@
 #  limitations under the License.
 
 require 'skywalking_ruby/agent'
-require 'skywalking_ruby/configuration'
 
 module SkywalkingRuby
   class << self

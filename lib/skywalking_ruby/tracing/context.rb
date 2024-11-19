@@ -16,13 +16,19 @@
 module SkywalkingRuby
   module Tracing
     class Context
-
-      class SpanContext
-        def new_local_span
-        end
+      def new_entry_span
       end
 
-      class NoopContext
+      def new_local_span
+      end
+
+      def new_exit_span
+      end
+      
+      def start
+      end
+      
+      def stop
       end
     end
   end

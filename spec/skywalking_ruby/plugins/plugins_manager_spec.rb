@@ -13,3 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+require 'spec_helper'
+
+module SkywalkingRuby
+  RSpec.describe PluginsManager do
+    before do
+      start
+    end
+    it 'install plugins' do
+      p PluginsManager.new.install_plugins
+    end
+  end
+end

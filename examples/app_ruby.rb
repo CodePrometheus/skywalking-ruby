@@ -13,14 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-module SkywalkingRuby
-  module Plugins
-    class HTTP < SkywalkingRuby::PluginsManager::SWPlugin
-      def name
-        "http"
-      end
-      def install
-      end
-    end
-  end
-end
+require 'skywalking_ruby'
+
+SkywalkingRuby.start
