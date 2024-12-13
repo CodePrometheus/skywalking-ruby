@@ -19,20 +19,73 @@ require 'logger'
 module SkywalkingRuby
   class Configuration
     DEFAULTS = {
-      'service_name' => [:string, 'Your_ApplicationName'],
-      'instance_name' => [:string, 'Your_InstanceName'],
-      'collector_discard' => [:bool, false],
-      'collector_backend_service' => [:string, '127.0.0.1:11800'],
-      'config_file' => [:string, ''],
-      'log_file' => [:string, 'skywalking_ruby.log'],
-      'log_file_path' => [:string, 'STDOUT'],
-      'log_level' => [:string, 'info'],
-      'disable_plugins' => [:string, 'redis'],
-      'report_protocol' => [:string, 'grpc'],
+      :service_name => {
+        type: :string,
+        default: 'Your_ApplicationName',
+        desc: 'The name of your awesome Ruby service'
+      },
+      :instance_name => {
+        type: :string,
+        default: 'Your_InstanceName',
+        desc: 'The name of this particular awesome Python service instance'
+      },
+      :collector_discard => {
+        type: :bool,
+        default: false
+      },
+      :collector_backend_service => {
+        type: :string,
+        default: '127.0.0.1:11800'
+      },
+      :config_file => {
+        type: :string,
+        default: ''
+      },
+      :log_file => {
+        type: :string,
+        default: 'skywalking_ruby.log'
+      },
+      :log_file_path => {
+        type: :string,
+        default: 'STDOUT'
+      },
+      :log_level => {
+        type: :string,
+        default: 'info'
+      },
+      :disable_plugins => {
+        type: :string,
+        default: ''
+      },
+      :report_protocol => {
+        type: :string,
+        default: 'grpc'
+      },
+      :re_ignore_operation => {
+        type: :string,
+        default: ''
+      },
+      :grpc_upstream_timeout => {
+        type: :int,
+        default: 5
+      },
+      :namespace => {
+        type: :string,
+        default: ''
+      },
+      :instance_properties_json => {
+        type: :string,
+        default: '',
+        desc: 'A custom JSON string to be reported as service instance properties, e.g. `{"key": "value"}`'
+      },
+      :collector_heartbeat_period => {
+        type: :int,
+        default: 3
+      },
     }.freeze
 
     # @api private
-    attr_reader :agent_config, :root_path
+    attr_reader :agent_config
 
     def initialize(opts = {})
       @agent_config = {}
@@ -42,7 +95,7 @@ module SkywalkingRuby
 
     def initialize_config(opts)
       # from the default value
-      merge_config(DEFAULTS.transform_values { |v| v[1] })
+      merge_config(DEFAULTS.transform_values { |v| v[:default] })
       merge_config(opts)
       # from the custom config file
       merge_config(override_config_by_file)
@@ -51,14 +104,16 @@ module SkywalkingRuby
 
     def merge_config(new_config)
       return if new_config.nil?
+
       new_config.each do |k, v|
-        agent_config[k.to_s] = v
+        @agent_config[k.to_sym] = v
       end
     end
 
     def override_config_by_file
-      config_yaml = @agent_config['config_file']
+      config_yaml = @agent_config[:config_file]
       return if config_yaml.nil? || config_yaml.empty?
+
       unless File.exist?(config_yaml)
         logger.warn "No config file found at #{config_yaml}"
         return
@@ -76,8 +131,8 @@ module SkywalkingRuby
         logger.error "override config by file failed, error=%s", e.message
         nil
       end
-
       raise Exception, "Error loading config file: #{config_yaml} - #{error}" if error
+
       loaded_yaml
     end
 
@@ -86,28 +141,37 @@ module SkywalkingRuby
       DEFAULTS.each do |env_key, env_schema|
         env_value = ENV[key_to_env_key(env_key)]
         next if env_value.nil?
-        type = env_schema[0]
+
+        type = env_schema[:type]
         case type
         when :string
           new_config[env_key] = env_value.to_s
         when :bool
           new_config[env_key] = !%w[0 false].include?(env_value.strip.downcase)
+        when :int
+          new_config[env_key] = env_value.to_s
         else
           env_value
         end
       end
+
       new_config
     end
 
     def key_to_env_key(key)
-      'SW_AGENT_' + key.upcase
+      'SW_AGENT_' + key.to_s.upcase
     end
 
     def freeze
       super
-      agent_config.freeze
-      agent_config.transform_values(&:freeze)
+      @agent_config.freeze
+      @agent_config.transform_values(&:freeze)
+
       self
+    end
+
+    def self.config
+      @agent_config ||= Configuration.new
     end
 
     #####
@@ -128,11 +192,16 @@ module SkywalkingRuby
         log_dest = File.expand_path(out, Pathname.new(Dir.pwd).realpath)
         FileUtils.mkdir_p(File.dirname(log_dest))
       end
-      logger = Logger.new(log_dest, progname: "Skywalking-Ruby", level: level)
-      logger.formatter = log_formatter
-      logger
-    rescue StandardError
-      Logger.new($stdout, progname: "Skywalking-Ruby", level: level)
+
+      begin
+        logger = ::Logger.new(log_dest, progname: "Skywalking-Ruby", level: level)
+        logger.formatter = log_formatter
+
+        logger
+      rescue => e
+        logger = ::Logger.new($stdout, progname: "Skywalking-Ruby", level: level)
+        logger.warn "Create logger for file #{log_dest} failed, using standard out for logging error=#{e.message}"
+      end
     end
 
     def log_formatter
@@ -146,17 +215,17 @@ module SkywalkingRuby
       case true
       when stdout?
         $stdout
-      when !agent_config['log_file'].nil?
-        agent_config['log_file']
-      when !agent_config['log_file_path'].nil?
-        "#{agent_config['log_file_path']}/skywalking_ruby.log"
+      when !agent_config[:log_file].nil?
+        agent_config[:log_file]
+      when !agent_config[:log_file_path].nil?
+        "#{agent_config[:log_file_path]}/skywalking_ruby.log"
       else
         $stdout
       end
     end
 
     def get_log_level
-      case agent_config['log_level']
+      case @agent_config[:log_level]
       when "debug" then ::Logger::DEBUG
       when "info" then ::Logger::INFO
       when "warn" then ::Logger::WARN
@@ -167,7 +236,7 @@ module SkywalkingRuby
     end
 
     def stdout?
-      agent_config['log_file_path'] == "STDOUT"
+      @agent_config[:log_file_path] == "STDOUT"
     end
 
     private
@@ -175,7 +244,7 @@ module SkywalkingRuby
     def generate_accessors
       agent_config.keys.each do |key|
         self.class.send(:define_method, key) do
-          agent_config[key.to_s]
+          agent_config[key.to_sym]
         end
       end
     end

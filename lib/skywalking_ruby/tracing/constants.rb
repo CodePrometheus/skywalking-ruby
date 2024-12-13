@@ -30,7 +30,7 @@ module SkywalkingRuby
       FAAS = 6
     end
 
-    class Kind
+    class SpanType
       Local = 0
       Entry = 1
       Exit = 2

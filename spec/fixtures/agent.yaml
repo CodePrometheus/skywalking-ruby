@@ -16,7 +16,7 @@
 # under the License.
 
 # The service name in UI
-service_name: Your_ApplicationName
+service_name: sw-ruby
 instance_name: Your_InstanceName  
 
 # Whether to enable the reporter

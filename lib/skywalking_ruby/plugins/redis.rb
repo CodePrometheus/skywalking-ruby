@@ -20,6 +20,7 @@ module SkywalkingRuby
         def call_v(command)
           orig_command = command[0]
           return super if orig_command == :auth
+          
         end
       end
 

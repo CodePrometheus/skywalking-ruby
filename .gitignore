@@ -77,4 +77,3 @@ build-iPhoneSimulator/
 Gemfile.lock
 gemfiles/*.lock
 .DS_Store!
-lib/skywalking_ruby/proto/

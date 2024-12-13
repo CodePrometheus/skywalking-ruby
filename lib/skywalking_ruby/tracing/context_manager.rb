@@ -16,6 +16,21 @@
 module SkywalkingRuby
   module Tracing
     class ContextManager
+      class << self
+        def spans
+          Thread.current[:spans] ||= []
+        end
+
+        def spans_dup
+          spans_dup = spans.dup
+          Thread.current[:spans] = spans_dup
+          spans_dup
+        end
+
+        def reset_spans
+          Thread.current[:spans] = []
+        end
+      end
     end
   end
 end

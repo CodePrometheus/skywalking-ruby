@@ -13,9 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-require 'skywalking_ruby/configuration'
-require 'skywalking_ruby/log/logger'
-require 'skywalking_ruby/plugins_manager'
+require_relative 'configuration'
+require_relative 'log/logger'
+require_relative 'plugins_manager'
+require_relative 'reporter/reporter'
 
 module SkywalkingRuby
   # @api private
@@ -29,20 +30,23 @@ module SkywalkingRuby
 
       def start(config)
         return @agent if @agent
-        config ||= {}
-        config = Configuration.new(config) unless config.is_a?(Configuration)
 
         LOCK.synchronize do
           return @agent if @agent
-          @agent = new(config).start
+
+          config ||= {}
+          config = Configuration.new(config) unless config.is_a?(Configuration)
+
+          @agent = new(config).start!
           config.freeze
         end
       end
 
       def stop
-        LOCK.synchronize do
+        const_get(:LOCK).synchronize do
           return unless @agent
-          @agent.shutdown
+
+          @agent&.shutdown
           @agent = nil
         end
       end
@@ -52,17 +56,23 @@ module SkywalkingRuby
       end
     end
 
-    attr_reader :plugins, :logger
+    attr_reader :plugins, :logger, :reporter
 
     def initialize(config)
       @plugins = Plugins::PluginsManager.new(config)
+      @reporter = Reporter::Reporter.new(config)
     end
 
-    def start
-      plugins.install_plugins
+    def start!
+      @plugins.init_plugins
+      @reporter.init_reporter
+
+      at_exit { shutdown }
+      self
     end
 
     def shutdown
+      @reporter.stop
     end
   end
 end

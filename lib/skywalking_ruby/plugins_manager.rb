@@ -32,7 +32,7 @@ module SkywalkingRuby
         @config = config
       end
 
-      def install_plugins
+      def init_plugins
         load_plugins
         installed_plugins = self.class.installed.keys
         @enabled_plugins ||= installed_plugins - @config.disable_plugins.split(',')
@@ -40,14 +40,14 @@ module SkywalkingRuby
           self.class.installed[plugin_name].try_install(plugin_name)
         end
       end
-      
+
       def load_plugins
         Dir[File.join(__dir__, 'plugins', '*.rb')].each { |file| require file }
       end
 
       class SWPlugin
         include Log::Logging
-        
+
         def self.register(name, plugin_klass = self)
           Plugins::PluginsManager.register(name, plugin_klass.new)
         end
@@ -68,7 +68,7 @@ module SkywalkingRuby
             install
             @installed = true
           rescue => e
-            error "Plugin#try_install failed, plugin=%s, error=%s", name, e.message
+            error "try to install plugin=%s failed, error=%s", name, e.message
           end
         end
 

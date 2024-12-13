@@ -24,3 +24,5 @@ ruby ">= 3.0.0"
 gem 'rspec', '~> 3'
 gem "grpc"
 gem "grpc-tools"
+gem "async", '~> 2.21'
+gem 'fakeredis', require: nil

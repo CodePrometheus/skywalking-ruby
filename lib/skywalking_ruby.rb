@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-require 'skywalking_ruby/agent'
+require_relative 'skywalking_ruby/agent'
 
 module SkywalkingRuby
   class << self

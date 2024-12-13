@@ -13,9 +13,30 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+require_relative 'protocol'
+require_relative './client/grpc_client'
+
 module SkywalkingRuby
   module Reporter
-    class Grpc
+    class Grpc < Protocol
+      def initialize(config)
+        @ms_client = SkywalkingRuby::Reporter::Client::GrpcClient::ManagementServiceGrpc.new(config)
+        @trace_client = SkywalkingRuby::Reporter::Client::GrpcClient::TraceSegmentReportServiceGrpc.new(config)
+        @properties_submitted = false
+      end
+
+      def report_heartbeat
+        unless @properties_submitted
+          @ms_client.report_instance_properties
+          @properties_submitted = true
+        end
+
+        @ms_client.report_heartbeat
+      end
+
+      def report_segment(segment_obj)
+        @trace_client.report_segment(segment_obj)
+      end
     end
   end
 end

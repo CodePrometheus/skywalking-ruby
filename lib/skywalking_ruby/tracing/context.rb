@@ -17,18 +17,23 @@ module SkywalkingRuby
   module Tracing
     class Context
       def new_entry_span
+        raise NotImplementedError, 'The new_entry_span method has not been implemented'
       end
 
       def new_local_span
+        raise NotImplementedError, 'The new_local_span method has not been implemented'
       end
 
       def new_exit_span
+        raise NotImplementedError, 'The new_exit_span method has not been implemented'
       end
       
       def start
+        raise NotImplementedError, 'The start method has not been implemented'
       end
       
-      def stop
+      def stop?
+        raise NotImplementedError, 'The stop method has not been implemented'
       end
     end
   end
